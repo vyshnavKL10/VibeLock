@@ -1,6 +1,7 @@
 <p align="center">
   <img src="vibelock-banner.png" alt="VibeLock Banner" width="100%">
 </p>
+
 # VibeLock
 
 **Build fast. Secure by default.**
