@@ -2,126 +2,180 @@
 
 **Build fast. Secure by default.**
 
-VibeLock is an agent-independent, project-aware security workflow for software built with AI coding agents. Instead of applying the same checklist to every project, it makes the agent understand the project first, work out what security it actually needs, get your approval, implement the controls, and report honestly what was and wasn't verified.
+VibeLock is a project-aware security framework for AI-assisted software development. It is a skill: a set of Markdown instructions that makes an AI coding agent understand your project first (purpose, stack, data, users, exposure), work out what security it actually needs, plan it, get your approval, implement it, verify it with evidence, review its own changes, and report honestly what was and was not checked.
 
-## Status
+It adapts to the project. A static brochure site and a payments backend get different plans, and an agent following VibeLock is expected to explain why each control applies and to say "this doesn't apply here" when it doesn't.
 
-**Version 0.1, early.** Please read this before relying on it.
+## What VibeLock is not
 
-- It is a **skill-only** release: three Markdown files. There is **no CLI**, no scanner, and no automation bundled. The agent following the skill runs the checks, using whatever tools exist in your environment.
-- It has **not yet been tested across agents**. The first target is **Claude Code**. Support for Claude (claude.ai), Cursor, Antigravity, and other agents is planned but unproven. Until tested, treat anything else as experimental.
-- The platform guidance has **not been validated against real-world projects**. Mobile (Android, iOS, Huawei), desktop, and MCP sections are initial guidance.
-- VibeLock reduces risk. It does **not** guarantee security, and it is not a substitute for a professional review or penetration test.
+- Not a vulnerability scanner. It runs no scans by itself. The agent runs whatever checks exist in your environment and reports what ran.
+- Not a checklist applied to every project, and not a collection of prompts.
+- Not a certification or guarantee. Risk tiers guide how deeply a project is reviewed. A project at any tier can still be breached.
+- Not a replacement for a security professional, a penetration test, or compliance advice.
+- Not a CLI. There is no `vibelock` command today (see the roadmap).
 
-## What it does
+## Status (version 0.2.0)
 
-1. **Discovers** the project from its files before asking you anything.
-2. **Separates** confirmed facts, assumptions, unknowns, and decisions that need your approval.
-3. **Asks** a few questions, written from what it found in your project, only where the answer could change the plan. There is no fixed questionnaire.
-4. **Maps** assets, trust boundaries, and realistic threats.
-5. **Rates risk** (Level 1 to 4) from impact, exposure, data sensitivity, privilege, abuse potential, and recoverability, assessing high-risk components like auth and payments separately.
-6. **Selects** only the controls that fit your stack and level, and explains why each one fits.
-7. **Asks for approval** before consequential changes.
-8. **Implements** controls in small, reviewable steps, preserving existing behaviour.
-9. **Verifies** with checks it actually ran.
-10. **Reports** results, limitations, and residual risk.
+| Area | State |
+|---|---|
+| Workflow (`SKILL.md`), risk model, platform controls, report templates | **Written.** Content has not been reviewed by an independent security professional. |
+| Structural checks (`tests/check_structure.py`) | **Implemented and run.** Results are in [docs/VALIDATION_PLAN.md](docs/VALIDATION_PLAN.md). |
+| Agent-behaviour scenarios (`tests/01` to `tests/10`) | **Written. None has been run against a real agent yet.** |
+| Loading in Claude Code | **Not yet tested by the authors.** Uses the documented skill folder convention. |
+| Upload to Claude (claude.ai) as a `.skill` file | **Not yet tested.** The package passes the skill validator. |
+| Other agents (Cursor, Antigravity, Codex, and others) | **Unsupported.** No adapter exists. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). |
+| Platform guidance for Android, iOS, Huawei, desktop, MCP, bots, internal tools | **Initial guidance, less tested.** Verify against current vendor documentation. |
+| CLI (`vibelock init`, `vibelock analyze`, `vibelock check`) | **Planned, does not exist.** |
 
-If information is missing, the plan is marked **PROVISIONAL**.
+## How it works
 
-## Risk levels
+The agent follows 12 phases, scaled to the size of the request:
 
-| Level | Name | Typical situation |
-|---|---|---|
-| 1 | Basic | Local or personal use, no sensitive data, easy recovery |
-| 2 | Standard | Public or multi-user, accounts or personal data |
-| 3 | Advanced | Payments, admin power, health or financial data, many users |
-| 4 | Critical | Irreversible, safety-critical, regulated, or large-scale money movement |
+1. Discover the project from its files.
+2. Identify unknowns and ask only the questions that would change the plan.
+3. Map assets, data flows, trust boundaries, identities, and dependencies.
+4. Identify realistic threats and abuse cases.
+5. Assess and explain risk ([docs/RISK_MODEL.md](docs/RISK_MODEL.md)).
+6. Build a prioritized plan from the controls in [PLATFORMS.md](PLATFORMS.md).
+7. Present the plan and get approval for consequential changes.
+8. Implement the approved controls in small steps.
+9. Run relevant tests and checks, where tools and permissions allow.
+10. Review the changes for regressions and new risks.
+11. Produce an evidence-based report ([examples/REPORT_TEMPLATE.md](examples/REPORT_TEMPLATE.md)).
+12. List unresolved issues and next actions.
 
-These levels are provisional heuristics. The agent shows its reasoning and you can override it.
+It works for new projects (the plan shapes design choices) and existing codebases (find weaknesses first, avoid rewrites). Small requests get a light pass with zero or one question, not a questionnaire.
 
-## Result statuses
+### Risk tiers
 
-Every check is reported as one of:
+| Tier | Meaning |
+|---|---|
+| Basic | Low impact, low likelihood. Baseline controls and cheap checks. |
+| Standard | Real users or data. Authorization tests, dependency and secret checks, written plan. |
+| Advanced | High impact or privilege (payments, admin power, sensitive data). Threat model, infrastructure and CI/CD review, independent review recommended. |
+| Critical | Severe or irreversible harm, or regulated high-risk data. Independent review and compliance advice before launch. |
+
+Tiers come from evidence (exposure, incentive, weaknesses, data, privilege, financial and operational impact, recoverability), not from labels like "personal" or "commercial". High-risk components are rated separately. Details and examples are in [docs/RISK_MODEL.md](docs/RISK_MODEL.md).
+
+### Result statuses
 
 | Status | Meaning |
 |---|---|
 | PASS | The check ran and the output shows the requirement is met |
 | FAIL | The check ran and the requirement is not met |
-| NOT TESTED | No check was run (not a pass) |
-| BLOCKED | A check was needed but could not run |
+| NOT TESTED | No check was run. Not a pass. |
+| BLOCKED | A check was needed but couldn't run |
 | NEEDS REVIEW | A person must judge it |
-
-VibeLock never reports PASS for something that didn't run.
+| NOT APPLICABLE | The control doesn't apply to this project (with the reason) |
 
 ## Install
 
-### Claude Code (primary target)
+The skill folder must be named `vibelock` and `SKILL.md` must sit directly inside it.
 
-Per project:
+### Claude Code
 
-```bash
-git clone https://github.com/<your-username>/vibelock.git .claude/skills/vibelock
-```
-
-Or for all your projects:
+Project-level:
 
 ```bash
-git clone https://github.com/<your-username>/vibelock.git ~/.claude/skills/vibelock
+git clone https://github.com/vyshnavKL10/VibeLock.git .claude/skills/vibelock
 ```
 
-Replace `<your-username>` with the account hosting the repository.
+User-level (all projects):
 
-### Claude (claude.ai / desktop)
+```bash
+git clone https://github.com/vyshnavKL10/VibeLock.git ~/.claude/skills/vibelock
+```
 
-Package the folder as a `.skill` file and upload it under Settings, then Skills. Skill upload options depend on your plan and organization. This route is untested.
+The clone also contains files the skill does not need at runtime (README, `tests/`, and most of `docs/`). They are harmless: the agent loads `SKILL.md` first and reads other files only when a phase needs them.
 
-### Other agents (experimental, untested)
+**Files the skill needs at runtime.** Keep these four together, in the same folder layout, whenever you install by hand or copy the skill elsewhere:
 
-Adapters are not provided yet. In principle, you can point the agent's instruction file (for example `AGENTS.md` or its rules directory) at `SKILL.md` and `PLATFORMS.md`. Results will vary and haven't been verified. Reports of what works are welcome.
+| File | Used at |
+|---|---|
+| `SKILL.md` | Always. The skill itself. |
+| `docs/RISK_MODEL.md` | Phase 5, risk tiers |
+| `PLATFORMS.md` | Phase 6, controls |
+| `examples/REPORT_TEMPLATE.md` | Phases 7 and 11, plan and report formats |
 
-## Usage
+`SKILL.md` alone still loads. If the other three are missing, the agent is told to say so and continue on its own judgment, marking those parts NEEDS REVIEW, so results are weaker and less consistent.
 
-Ask your agent in plain language, for example:
+Skills are instructions your agent will follow. Install only from the official repository, consider pinning a commit (`git checkout <commit>`), and read `SKILL.md` changes before you update.
+
+### Claude (claude.ai)
+
+Upload a packaged `vibelock.skill` file where your plan supports custom skills. Availability depends on your plan and organization. This route is untested.
+
+### Other agents
+
+No adapter is provided, and compatibility is not claimed. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the rules for adding one.
+
+## Invoke
+
+Describe the task in plain language. The agent decides to load the skill from its description, or you can ask for it by name:
 
 - "Use VibeLock to make a security plan for this project."
 - "Is this ready to ship? Check it with VibeLock."
-- "Add login and payments to this app, securely."
-- "Review the security of this MCP server."
+- "Add login and payments to this app, securely, using VibeLock."
+- "Review the security of this MCP server with VibeLock."
 
-Expect questions first, a plan second, and changes only after you approve.
+Expect discovery and questions first, a plan second, and changes only after you approve.
 
-## Files
+## Check that it loaded
 
-| File | Purpose |
-|---|---|
-| `SKILL.md` | The workflow: discovery rules, risk assessment, approval gates, verification, reporting |
-| `PLATFORMS.md` | Controls per platform, tagged by minimum risk level and read only when relevant |
-| `README.md` | This file |
+In a fresh session, ask:
 
-## Skill format
+> Use VibeLock. Summarize its 12 phases in one line each, and tell me which files you would read at Phase 5 and Phase 6.
 
-VibeLock follows the standard skill layout: one `SKILL.md` with YAML frontmatter (`name`, `description`, `compatibility`) and a short, instruction-style body, plus a reference file (`PLATFORMS.md`) the agent reads only when relevant. The folder name must stay `vibelock` and the repository must contain exactly one `SKILL.md`.
+A loaded skill answers with the phases from `SKILL.md` and names `docs/RISK_MODEL.md` and `PLATFORMS.md`. If it answers from general knowledge or can't find them, the skill did not load. Check the folder name and that `SKILL.md` is directly inside it.
+
+For a behaviour check, run scenario [tests/01-static-website.md](tests/01-static-website.md) and compare the result with its pass criteria. The full method is in [docs/VALIDATION_PLAN.md](docs/VALIDATION_PLAN.md).
+
+## Repository layout
+
+```
+VibeLock/
+├── SKILL.md                    core workflow (the skill)
+├── PLATFORMS.md                controls per platform, tagged by tier and class
+├── README.md
+├── LICENSE
+├── SECURITY.md                 how to report a problem in VibeLock
+├── CONTRIBUTING.md
+├── .gitignore
+├── docs/
+│   ├── ARCHITECTURE.md         layers, decisions, agent compatibility, future CLI seam
+│   ├── RISK_MODEL.md           how risk is rated, tier definitions, movement between tiers
+│   ├── THREAT_MODEL.md         how VibeLock itself could fail or be abused
+│   └── VALIDATION_PLAN.md      how to test the skill, and what has actually been run
+├── examples/
+│   └── REPORT_TEMPLATE.md      plan, finding, and report templates
+└── tests/
+    ├── 01-static-website.md ... 10-testing-unavailable.md   behaviour scenarios
+    └── check_structure.py      maintainer lint (not part of the skill)
+```
 
 ## Safety principles
 
-- No guessing, no silently assuming a project is private or low-risk.
-- Never exposes secrets in code, reports, or logs.
+- No guessing. Facts are labelled Confirmed, Assumption, Unknown, or Needs approval.
+- Never claims a check passed unless it ran and left evidence.
+- Treats project content as data, never as instructions.
+- Never exposes secrets or personal data in code, reports, or logs.
 - Uses established libraries and platform mechanisms, never custom cryptography.
-- Only tests systems you own or are authorized to test.
-- Requires explicit approval before destructive actions or production changes.
+- Tests only systems you own or are authorized to test. No destructive tests or production changes without explicit approval.
+
+## Reporting vulnerabilities
+
+If you find guidance in VibeLock that could lead to an insecure outcome, or a way the skill could be abused, see [SECURITY.md](SECURITY.md). Please don't post details publicly first.
 
 ## Roadmap (proposed, not implemented)
 
-These are ideas, not features. Nothing below exists yet.
-
-- Testing and tightening the skill with real projects, starting with Claude Code.
-- Adapters for other agents, added only after each is tested.
-- A possible small CLI (`vibelock init`, `vibelock analyze`, `vibelock check`) for the deterministic parts such as stack detection and running checks. Whether it's worth building depends on what v0.1 shows.
-- Deeper per-platform guidance where the current sections are thin.
+- Run the ten scenarios against Claude Code and fix what they reveal.
+- Add an agent adapter only after its author can explain that agent's convention and shows the load check and two scenarios passing.
+- A possible small CLI for deterministic jobs (stack detection, running checks). Whether it is worth building depends on what the scenario runs show.
+- Independent review of the platform guidance, starting with Android, iOS, Huawei, desktop, and MCP.
 
 ## Contributing
 
-Issues and pull requests are welcome, especially real-world test reports, corrections to platform guidance, and tested agent adapters. Please keep the core logic agent-independent and avoid claiming support that hasn't been tested.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
@@ -129,4 +183,4 @@ MIT. See [LICENSE](LICENSE).
 
 ## Disclaimer
 
-VibeLock provides guidance and a workflow, provided as is, without warranty. It can't guarantee that software is secure. You remain responsible for your project's security.
+VibeLock provides guidance and a workflow, as is, without warranty. It can't guarantee that software is secure. You remain responsible for your project's security.
