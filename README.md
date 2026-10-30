@@ -187,3 +187,7 @@ Maintained by vyshnav
 - Discord: whyshnav_10
 
 Please report security problems through [SECURITY.md](SECURITY.md), not through social media.
+
+<p align="center">
+  <img src="vibelock-banner.png" alt="VibeLock Banner" width="100%">
+</p>
