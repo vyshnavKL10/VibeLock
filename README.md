@@ -42,7 +42,7 @@ The agent follows 12 phases, scaled to the size of the request:
 11. Produce an evidence-based report ([examples/REPORT_TEMPLATE.md](examples/REPORT_TEMPLATE.md)).
 12. List unresolved issues and next actions.
 
-It works for new projects (the plan shapes design choices) and existing codebases (find weaknesses first, avoid rewrites). Small requests get a light pass with zero or one question, not a questionnaire.
+It works for new projects (the plan shapes design choices) and existing codebases (find weaknesses first, avoid rewrites). Small requests get a light pass with zero or one question, not a questionnaire. Every run ends with a short security summary after the agent's normal summary of its work.
 
 ### Risk tiers
 
@@ -177,3 +177,13 @@ MIT. See [LICENSE](LICENSE).
 ## Disclaimer
 
 VibeLock provides guidance and a workflow, as is, without warranty. It can't guarantee that software is secure. You remain responsible for your project's security.
+
+## Author
+
+Maintained by vyshnav
+
+- GitHub: [vyshnavKL10](https://github.com/vyshnavKL10)
+- Instagram: [@whyshnav_10](https://www.instagram.com/whyshnav_10)
+- Discord: whyshnav_10
+
+Please report security problems through [SECURITY.md](SECURITY.md), not through social media.
