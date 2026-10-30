@@ -1,15 +1,32 @@
 # VibeLock platform controls
 
-Reference for `SKILL.md`. Read the **Cross-cutting** section always, then **only the sections that match the project's discovered stack**.
+Reference for `SKILL.md` (Phase 6). Read the **Cross-cutting** section always, then **only the sections that match the project's discovered stack**.
 
 ## How to read this file
 
-- Each control has an ID and a minimum level: `API-01 [L1+]` applies when the component's risk level is 1 or higher. `[L3+]` applies at Level 3 and Level 4 only.
-- Controls are starting points, not a complete standard. Select by project fit and explain why each one applies.
-- **Maturity** notes mark how well-developed each section is. v0.1 has **not** been validated against real projects yet. Treat every section as guidance to verify, not authority.
-- Platform details change. When a control depends on a vendor's current behaviour (especially Huawei, Apple, Google, and payment providers), check the vendor's current documentation and mark the result NEEDS REVIEW if you can't.
+Each control has an ID and a minimum tier: `API-01 [L1+]` applies from Basic (L1) upward, `[L2+]` from Standard, `[L3+]` from Advanced. Tiers are defined in `docs/RISK_MODEL.md`. Use the tier of the **component** the control protects, not only the project's overall tier.
 
-Contents: Cross-cutting, Web frontend, API/backend, Authentication, Database, Server/VPS and containers, Payments and webhooks, CI/CD, Cloud, Android, iOS, Huawei, Desktop, MCP servers and AI tools, SDKs and libraries.
+### Control classes
+
+For a component at tier L, classify each control in the matching sections:
+
+| Class | Rule | What the agent does |
+|---|---|---|
+| **Mandatory** | The tag is at or below L, and the control applies to this project | Plan it. Skip only by recording Not applicable with a reason. |
+| **Recommended** | The tag is exactly one tier above L | Offer it. Include it if it is cheap or the risk factors trend high. The user decides. |
+| **Conditional** | The control text begins with "If" | Applies only when the stated condition is confirmed true. Otherwise Not applicable. |
+| **Not applicable** | The technology or situation is absent (for example, no database exists) | Record it with the reason and any alternative. Don't implement it. |
+
+Controls tagged two or more tiers above L are out of scope for now. Mention them only as "what to add when this grows".
+
+### Other notes
+
+- Controls are starting points, not a complete standard. Select by project fit and explain why each one applies.
+- **Maturity** notes mark how well-developed each section is. Version 0.2.0 has **not** been validated against real projects yet. Treat every section as guidance to verify, not authority.
+- Platform details change. When a control depends on a vendor's current behaviour (especially Huawei, Apple, Google, and payment providers), check the vendor's current documentation and mark the result NEEDS REVIEW if you can't.
+- Section "References" at the end lists where to check details. No external link has been checked by the authors of this file.
+
+Contents: Cross-cutting, Privacy and compliance, Web frontend, API and backend, GraphQL APIs, Authentication, Database, Server/VPS and containers, Payments and webhooks, CI/CD, Cloud, Microservices and internal services, Android, iOS, Huawei, Desktop, MCP servers and AI tools, Bots and automation, Internal tools, SDKs and libraries, References.
 
 ---
 
@@ -33,6 +50,21 @@ Maturity: core.
 - ALL-14 [L3+] Independent review or penetration test before launch or major changes.
 
 Verify: secret scan (if installed), dependency audit, reading `.gitignore` and config, grep for leftovers (ALL-06).
+
+---
+
+## Privacy and compliance
+
+Applies when: the project collects, stores, or sends personal data. Maturity: basic. This is guidance for engineering decisions, **not legal advice**. Anything about legal duties is NEEDS REVIEW by a qualified professional.
+
+- PRIV-01 [L1+] Collect only the personal data a feature actually needs, and know what you hold and where it is stored (database, logs, backups, analytics, third parties).
+- PRIV-02 [L2+] If you process personal data of people in regions with privacy law (for example the EU/EEA/UK, or California), identify your duties: privacy notice, lawful basis or consent, access and deletion requests, breach notification deadlines. Mark NEEDS REVIEW.
+- PRIV-03 [L2+] Define how long personal data is kept and how it is deleted, including from logs and backups as far as practical.
+- PRIV-04 [L2+] If you handle regulated data beyond what a provider's hosted flow covers (card data under PCI DSS, health data, children's data), treat it as NEEDS REVIEW and get compliance guidance before launch.
+- PRIV-05 [L2+] Before sending personal data to a third party (analytics, email, AI APIs), find out what they retain and whether they train on it, and send only what is needed.
+- PRIV-06 [L2+] Mask or omit personal data in logs and error reports.
+
+Verify: read the schema, analytics and SDK usage, and log statements. Legal conclusions are never a PASS.
 
 ---
 
@@ -69,6 +101,21 @@ Applies when: the project exposes HTTP/GraphQL/gRPC/etc. or runs backend logic. 
 - API-10 [L3+] Malware scanning for uploads where users can share files with each other.
 
 Verify: tests that a second user gets 403/404 for another user's resources, tests for invalid input, reading handlers for string-built queries.
+
+---
+
+## GraphQL APIs
+
+Applies when: the project exposes a GraphQL endpoint (in addition to the API and backend controls). Maturity: initial guidance, less tested.
+
+- GQL-01 [L1+] Check authorization in resolvers, per object and per sensitive field, not only at the gateway or route.
+- GQL-02 [L2+] Limit query depth and complexity, and set timeouts, so one request can't exhaust the server.
+- GQL-03 [L2+] Disable introspection, the interactive explorer, and verbose errors in production unless the API is deliberately public.
+- GQL-04 [L2+] Rate-limit by query cost, not only by request count. Aliases and batching can pack many operations (for example many login attempts) into one request.
+- GQL-05 [L2+] Validate arguments and custom scalars, and reject unknown input fields.
+- GQL-06 [L3+] For first-party clients, consider persisted or allow-listed queries.
+
+Verify: tests for cross-user object access through nested fields, a deep-query test against a local instance, reading resolver code for missing checks.
 
 ---
 
@@ -119,6 +166,10 @@ Applies when: the user runs their own server, VM, or containers. Maturity: moder
 - SRV-07 [L2+] Brute-force protection and basic monitoring/alerts (fail2ban or equivalent).
 - SRV-08 [L3+] Separate staging and production, with separate secrets per environment.
 - SRV-09 [L3+] Infrastructure as code reviewed like application code.
+- SRV-10 [L1+] No secrets baked into images, layers, or Dockerfiles. Inject them at runtime.
+- SRV-11 [L2+] Minimal base images pinned by digest or exact version; scan images if a scanner is available.
+- SRV-12 [L2+] If you run Kubernetes: least-privilege RBAC, service-account tokens mounted only where needed, NetworkPolicies, non-root pods with a read-only root filesystem where possible, and no plaintext secrets in manifests.
+- SRV-13 [L2+] Resource limits on containers and processes to contain abuse and runaway usage.
 
 Verify: read sshd config, firewall rules, compose/Docker files. Do not change live server settings without approval and a rollback path (keep a second SSH session open when editing SSH or firewall config).
 
@@ -167,6 +218,21 @@ Applies when: the project uses AWS, GCP, Azure, or similar. Maturity: basic.
 - CLD-05 [L3+] Audit logging enabled and retained.
 
 Verify: read IaC and policies; live console checks are often BLOCKED, so mark NEEDS REVIEW.
+
+---
+
+## Microservices and internal services
+
+Applies when: the project has several services that call each other. Maturity: initial guidance, less tested.
+
+- SVC-01 [L1+] Only the gateway or edge is publicly reachable. Internal services bind to private interfaces.
+- SVC-02 [L2+] Authenticate service-to-service calls (mutual TLS or signed, short-lived tokens). "It's on the internal network" is not authentication.
+- SVC-03 [L2+] Carry the end user's identity through the call chain and let each service re-check authorization for the data it owns.
+- SVC-04 [L2+] Separate credentials and least privilege per service identity.
+- SVC-05 [L2+] Restrict which services may talk to which (network policies or security groups).
+- SVC-06 [L3+] Central audit logging with correlation IDs across services.
+
+Verify: read network and deployment config; test that an internal service rejects calls without valid service credentials.
 
 ---
 
@@ -252,6 +318,38 @@ Verify: list the tools and their permissions, read argument handling, test path 
 
 ---
 
+## Bots and automation
+
+Applies when: the project is a chat bot (Discord, Telegram, Slack and similar), a scheduled job, a scraper, or a workflow automation. Maturity: initial guidance, less tested.
+
+- BOT-01 [L1+] Bot tokens and webhook URLs are secrets: environment variables, never in the repo. Revoke and reissue if one leaks.
+- BOT-02 [L1+] Request only the scopes, intents, and permissions the features need.
+- BOT-03 [L1+] Authorize privileged commands by stable user or role IDs checked in code, not by display name or channel membership.
+- BOT-04 [L2+] Treat message text, attachments, and linked pages as untrusted input. Never pass them to a shell, `eval`, or string-built SQL. If a language model is in the loop, apply MCP-01.
+- BOT-05 [L2+] Verify inbound webhooks and interaction callbacks (signatures). Don't expose endpoints that trigger actions without authentication.
+- BOT-06 [L2+] Rate limit, guard against loops (a bot replying to itself or to other bots), and cap spend on paid APIs.
+- BOT-07 [L2+] Run scheduled jobs under dedicated least-privilege accounts, keep tokens out of logs, and alert someone on failure.
+- BOT-08 [L3+] Require human approval for irreversible actions triggered by automation.
+
+Verify: read command handlers and permission checks, test an unauthorized user invoking a privileged command, read how input reaches shell or SQL.
+
+---
+
+## Internal tools
+
+Applies when: the project is an admin panel, dashboard, or tool for staff. Maturity: initial guidance, less tested.
+
+- INT-01 [L1+] Not reachable from the public internet unless required. Put it behind a VPN, SSO, or an IP allowlist.
+- INT-02 [L1+] "Internal" does not mean "no authentication". Require login and per-user authorization (insiders and compromised accounts exist).
+- INT-03 [L2+] Log who did what for administrative actions.
+- INT-04 [L2+] Default to read-only access to production data. Destructive actions need confirmation.
+- INT-05 [L2+] Remove access promptly when someone leaves. Avoid shared accounts.
+- INT-06 [L3+] Enforce SSO with MFA and session timeouts.
+
+Verify: read bind addresses and proxy config, test an unauthenticated request, read the audit log code.
+
+---
+
 ## SDKs and libraries
 
 Applies when: the project publishes a package or SDK others will use. Maturity: basic.
@@ -264,3 +362,23 @@ Applies when: the project publishes a package or SDK others will use. Maturity: 
 - SDK-06 [L3+] Signed releases, reproducible builds, and an SBOM.
 
 Verify: read the publish workflow and package manifest.
+
+---
+
+## References
+
+Where to check details. These are starting points by name; the authors have **not** checked that every link still resolves, and have not copied requirements from them. Always use the current edition of a standard, and don't cite version-specific behaviour from memory.
+
+- OWASP Top 10: https://owasp.org/www-project-top-ten/
+- OWASP Application Security Verification Standard (ASVS): https://owasp.org/www-project-application-security-verification-standard/
+- OWASP API Security Top 10: https://owasp.org/API-Security/
+- OWASP Cheat Sheet Series: https://cheatsheetseries.owasp.org/
+- OWASP Mobile Application Security (MASVS, MASTG): https://mas.owasp.org/
+- NIST Computer Security Resource Center, for example SP 800-63 (digital identity) and SP 800-218 (Secure Software Development Framework): https://csrc.nist.gov/
+- CIS Benchmarks (server, container, and cloud hardening): https://www.cisecurity.org/cis-benchmarks
+- SLSA (supply-chain levels): https://slsa.dev/
+- Model Context Protocol documentation, including its security guidance: https://modelcontextprotocol.io/
+- Android developer security documentation: https://developer.android.com/
+- Huawei developer documentation: https://developer.huawei.com/
+- GitHub documentation, including Actions security hardening: https://docs.github.com/
+- Your framework's and your cloud or payment provider's own security documentation.
