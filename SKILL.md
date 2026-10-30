@@ -224,6 +224,8 @@ Use the Report template in `examples/REPORT_TEMPLATE.md`. Every finding has, whe
 
 The report also lists the scope (what was and wasn't examined), what changed, and the residual risk in plain language. Close with a plain statement: this reduces risk and is not a guarantee.
 
+**Closing security summary (every run, any depth).** After your normal summary of the work you did, end your final message with a short security summary of about 10 lines, using the template in `examples/REPORT_TEMPLATE.md`: the tier (and PROVISIONAL if it is), what you changed for security, the result counts per status with every FAIL and BLOCKED named, what was not tested or examined and why, the top remaining risks and next actions, and the not-a-guarantee line. At Light depth this summary is the whole report. At Standard and Full depth it is a digest that points to the full report. If the task had no security impact, say so plainly ("no security-relevant changes") instead of leaving the summary out. Never put secrets or personal data in it.
+
 ### Phase 12: Unresolved issues and next actions
 
 End with a ranked list: what to do now, before launch, and later. List open unknowns and decisions, the events that should trigger a re-run (new payment flow, new public endpoint, new data type, new integration with write access, a security incident), and when a professional review is advisable: at Advanced or Critical tier, before launching a public service that holds sensitive data, and before handling payments or regulated data at scale.
