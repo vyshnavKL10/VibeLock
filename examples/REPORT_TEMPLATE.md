@@ -1,6 +1,6 @@
 # VibeLock templates
 
-Two templates for the agent: the **Plan** (Phase 7) and the **Report** (Phase 11). Copy the structure, delete what doesn't apply, and keep it short for small projects. Every value in the worked example at the bottom is **fictional**.
+Two templates for the agent: the **Plan** (Phase 7) and the **Report** (Phase 11). Copy the structure, delete what doesn't apply, and keep it short for small projects. Fill every field from evidence you actually gathered, never from a guess.
 
 ## Status vocabulary
 
@@ -108,21 +108,17 @@ Now / Before launch / Later. Re-run triggers. Whether professional review is adv
 This work reduces risk. It is not a guarantee that the project is secure.
 ````
 
-## Worked example (fictional)
+## Closing security summary template
 
-A made-up project to show the level of detail. Nothing below was actually run.
+Put this at the end of the agent's final message, after its normal summary of the work. About 10 lines. Light depth: this is the whole report.
 
 ````markdown
-### API-01: Order endpoint lacks per-object authorization
-- **Severity:** High
-- **Status:** FAIL
-- **Affected:** `src/routes/orders.js`, handler for `GET /orders/:id` (lines 18-31)
-- **Evidence:** The handler loads the order by ID and returns it after checking only that a session exists.
-  Local test `orders.authz.test.js` (written during this review): user B requests user A's order and receives
-  200 with A's data. Command: `npm test -- orders.authz`. Result: 1 failed, 4 passed.
-- **Reproduction (local only):** Log in as user B in the dev environment, request an order ID created by user A.
-- **Why it matters:** Any logged-in user can read any other user's orders, including names and addresses.
-- **Recommended remediation:** Query orders by both `id` and the session user's ID (or check ownership before
-  returning), and return 404 when they don't match.
-- **Verification method:** Re-run `npm test -- orders.authz`; the user-B request must return 404.
+## Security summary (VibeLock)
+- **Tier:** <Basic | Standard | Advanced | Critical> [PROVISIONAL: <unknowns>]
+- **Changed for security:** <one line per change, or "no security-relevant changes">
+- **Results:** <n> PASS, <n> FAIL, <n> NOT TESTED, <n> BLOCKED, <n> NEEDS REVIEW, <n> NOT APPLICABLE
+- **Needs attention:** <each FAIL and BLOCKED with severity and file or reason>
+- **Not tested or examined:** <what, and why>
+- **Top remaining risks and next actions:** <ranked, short>
+- This reduces risk. It is not a guarantee that the project is secure.
 ````
