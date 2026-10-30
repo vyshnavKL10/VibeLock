@@ -10,7 +10,6 @@ How the repository is organized and why. For what VibeLock does, see the [README
 | Risk model | `docs/RISK_MODEL.md` | How risk is rated and how a project moves between tiers | No |
 | Platform guidance | `PLATFORMS.md` | Controls per platform, tagged by tier and classified | No |
 | Templates | `examples/REPORT_TEMPLATE.md` | Plan, finding, and report formats | No |
-| Validation | `tests/`, `docs/VALIDATION_PLAN.md` | Scenarios and structural checks | Scenarios need an agent to run |
 | Agent adapters | none yet | Agent-specific install or loading glue | Yes, by definition |
 
 **Runtime files.** Only `SKILL.md`, `docs/RISK_MODEL.md`, `PLATFORMS.md`, and `examples/REPORT_TEMPLATE.md` are read while the skill runs. The rest is for visitors and maintainers.
@@ -62,7 +61,7 @@ The methodology is plain Markdown and does not mention an agent-specific mechani
 | Claude (claude.ai) | Upload of a packaged `.skill` file | The package passes the skill validator. **Upload and behaviour not tested by the authors.** |
 | Other agents (Cursor, Antigravity, Codex, and others) | No adapter provided | **Unsupported until an adapter is explained and validated.** You can point an agent's instruction file at `SKILL.md`, but results are unknown. |
 
-Reading Markdown is not the same as supporting a skill. Each agent has its own way to discover instructions, load referenced files, ask questions, and run commands. An adapter should be added only when its author can explain that agent's convention and show the load check and two scenarios from `docs/VALIDATION_PLAN.md` passing.
+Reading Markdown is not the same as supporting a skill. Each agent has its own way to discover instructions, load referenced files, ask questions, and run commands. An adapter should be added only when its author can explain that agent's convention and show that the skill loads and the workflow runs on that agent.
 
 **Adapter rule:** an adapter may contain installation glue and a pointer to `SKILL.md`. It must not copy the methodology. If an agent needs different wording, change `SKILL.md` for everyone or document the limitation.
 
