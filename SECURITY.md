@@ -8,7 +8,6 @@ VibeLock is Markdown guidance plus one small lint script. Examples of issues wor
 - A way the skill's own instructions could be abused, for example making an agent leak secrets, skip an approval gate, run destructive commands, or mark checks as PASS without evidence.
 - A weakness in how the skill handles untrusted project content (prompt injection).
 - Tampering or confusion in releases, such as an unofficial copy presented as the official one.
-- A defect in `tests/check_structure.py`.
 
 Not security issues here: vulnerabilities in a project you analyzed with VibeLock (report those to that project), general questions, and feature requests. Use normal issues for those.
 
