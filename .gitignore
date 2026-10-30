@@ -1,0 +1,20 @@
+# Environment and secrets (never commit these)
+.env
+.env.*
+!.env.example
+
+# Release artifacts (attach .skill files to GitHub releases instead)
+*.skill
+
+# Local scenario run transcripts (may contain sensitive material)
+/transcripts/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
