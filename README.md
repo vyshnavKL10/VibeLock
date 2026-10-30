@@ -19,8 +19,6 @@ It adapts to the project. A static brochure site and a payments backend get diff
 | Area | State |
 |---|---|
 | Workflow (`SKILL.md`), risk model, platform controls, report templates | **Written.** Content has not been reviewed by an independent security professional. |
-| Structural checks (`tests/check_structure.py`) | **Implemented and run.** Results are in [docs/VALIDATION_PLAN.md](docs/VALIDATION_PLAN.md). |
-| Agent-behaviour scenarios (`tests/01` to `tests/10`) | **Written. None has been run against a real agent yet.** |
 | Loading in Claude Code | **Not yet tested by the authors.** Uses the documented skill folder convention. |
 | Upload to Claude (claude.ai) as a `.skill` file | **Not yet tested.** The package passes the skill validator. |
 | Other agents (Cursor, Antigravity, Codex, and others) | **Unsupported.** No adapter exists. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). |
@@ -86,7 +84,7 @@ User-level (all projects):
 git clone https://github.com/vyshnavKL10/VibeLock.git ~/.claude/skills/vibelock
 ```
 
-The clone also contains files the skill does not need at runtime (README, `tests/`, and most of `docs/`). They are harmless: the agent loads `SKILL.md` first and reads other files only when a phase needs them.
+The clone also contains files the skill does not need at runtime (README, LICENSE, and most of `docs/`). They are harmless: the agent loads `SKILL.md` first and reads other files only when a phase needs them.
 
 **Files the skill needs at runtime.** Keep these four together, in the same folder layout, whenever you install by hand or copy the skill elsewhere:
 
@@ -128,7 +126,6 @@ In a fresh session, ask:
 
 A loaded skill answers with the phases from `SKILL.md` and names `docs/RISK_MODEL.md` and `PLATFORMS.md`. If it answers from general knowledge or can't find them, the skill did not load. Check the folder name and that `SKILL.md` is directly inside it.
 
-For a behaviour check, run scenario [tests/01-static-website.md](tests/01-static-website.md) and compare the result with its pass criteria. The full method is in [docs/VALIDATION_PLAN.md](docs/VALIDATION_PLAN.md).
 
 ## Repository layout
 
@@ -144,13 +141,9 @@ VibeLock/
 ├── docs/
 │   ├── ARCHITECTURE.md         layers, decisions, agent compatibility, future CLI seam
 │   ├── RISK_MODEL.md           how risk is rated, tier definitions, movement between tiers
-│   ├── THREAT_MODEL.md         how VibeLock itself could fail or be abused
-│   └── VALIDATION_PLAN.md      how to test the skill, and what has actually been run
-├── examples/
-│   └── REPORT_TEMPLATE.md      plan, finding, and report templates
-└── tests/
-    ├── 01-static-website.md ... 10-testing-unavailable.md   behaviour scenarios
-    └── check_structure.py      maintainer lint (not part of the skill)
+│   └── THREAT_MODEL.md         how VibeLock itself could fail or be abused
+└── examples/
+    └── REPORT_TEMPLATE.md      plan, finding, and report templates
 ```
 
 ## Safety principles
@@ -168,9 +161,9 @@ If you find guidance in VibeLock that could lead to an insecure outcome, or a wa
 
 ## Roadmap (proposed, not implemented)
 
-- Run the ten scenarios against Claude Code and fix what they reveal.
-- Add an agent adapter only after its author can explain that agent's convention and shows the load check and two scenarios passing.
-- A possible small CLI for deterministic jobs (stack detection, running checks). Whether it is worth building depends on what the scenario runs show.
+- Try the skill on real projects in Claude Code and fix what that reveals.
+- Add an agent adapter only after its author can explain that agent's convention and shows that the skill loads and the workflow runs on that agent.
+- A possible small CLI for deterministic jobs (stack detection, running checks). Whether it is worth building depends on how real-world use goes.
 - Independent review of the platform guidance, starting with Android, iOS, Huawei, desktop, and MCP.
 
 ## Contributing
