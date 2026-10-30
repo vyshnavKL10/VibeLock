@@ -19,21 +19,13 @@ Thanks for helping. VibeLock's value is accuracy and honesty, so the bar for cha
 4. Add how to verify it in the section's `Verify:` line if the method changes.
 5. Cite the vendor or standard documentation in your pull request, not from memory.
 
-## Adding a scenario
-
-Copy the structure of an existing file in `tests/`. Every scenario needs a fixture, a prompt, expected discovery, expected questions (including ones that must **not** be asked), risks and tier, controls, and at least four objective, numbered pass criteria. Never put real or real-looking secrets in a fixture. Tell the tester to generate their own fake value.
-
 ## Adding an agent adapter
 
-Only if you can explain that agent's conventions for discovering instructions and loading files. Include the exact install steps, a load check, and a record of scenarios 01 and 08 run on that agent. An adapter may hold installation glue and a pointer to `SKILL.md`. It must not copy the methodology.
+Only if you can explain that agent's conventions for discovering instructions and loading files. Include the exact install steps and how to confirm the skill loaded on that agent. An adapter may hold installation glue and a pointer to `SKILL.md`. It must not copy the methodology.
 
 ## Before you open a pull request
 
-```bash
-python3 tests/check_structure.py
-```
-
-It must report no FAIL results. It checks structure and consistency only. It can't tell you whether your guidance is correct, so say in the pull request how you verified it.
+Check that links between files still work, that control IDs stay unique, and that file names match what the README says. In the pull request, say how you verified your change.
 
 ## Reporting a vulnerability
 
