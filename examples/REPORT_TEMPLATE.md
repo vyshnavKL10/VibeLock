@@ -25,6 +25,16 @@ Severity is about one finding and decides urgency. The tier (see `docs/RISK_MODE
 | Low | Minor hardening gap: verbose errors, missing optional headers |
 | Info | Observation or good practice, no direct risk |
 
+## Confidence guide
+
+| Confidence | Meaning |
+|---|---|
+| High | Confirmed by evidence you ran or read in full: a local test result, tool output matched to the resolved version, or a complete traced path with no control on any route |
+| Medium | Clearly present in the code or configuration, but one step is unverified (reachability, a control on some path, whether a credential is live) |
+| Low | A plausible suspicion you couldn't verify. Report it as NEEDS REVIEW and name the exact question to answer. |
+
+FAIL needs a confirmed finding at High or Medium confidence. Low confidence is always NEEDS REVIEW.
+
 ## Plan template (Phase 7)
 
 ````markdown
@@ -52,6 +62,12 @@ The tier guides depth of review. It is not a certification or a guarantee.
 ## Proposed controls (ordered by risk reduction per effort)
 | ID | Control | Class (Mandatory / Recommended / Conditional) | Why it fits here | Effort | Needs approval? |
 
+## Assessments in scope
+| Assessment | In scope? (why or why not) | Depth | Tools available | Known limits up front |
+| Secret Exposure | | | | |
+| Dependency Security | | | | |
+| Secure Code Review | | | | |
+
 ## Not applicable, rejected, or deferred
 | ID or request | Decision | Reason | Alternative |
 
@@ -63,10 +79,12 @@ The tier guides depth of review. It is not a certification or a guarantee.
 
 ````markdown
 ### <ID>: <Title>
-- **Severity:** Critical | High | Medium | Low | Info
+- **Severity:** Critical | High | Medium | Low | Info (for dependencies, give the advisory's rating and the project's rating, and why)
+- **Confidence:** High | Medium | Low (and what you could not verify)
+- **Class:** assessment findings only, as defined in the assessment file
 - **Status:** PASS | FAIL | NOT TESTED | BLOCKED | NEEDS REVIEW | NOT APPLICABLE
 - **Affected:** component or file(s), with line numbers if useful
-- **Evidence:** what you saw or ran. Command and result summary. Never include secret values.
+- **Evidence:** what you saw or ran. Command and result summary. Never include secret values. For a secret, give only its label, type, location, and exposure context: no value, no partial value, no hash, no line content.
 - **Reproduction (only when safe):** steps against a local or authorized environment
 - **Why it matters:** the realistic consequence
 - **Recommended remediation:** the specific change
@@ -87,6 +105,12 @@ Not examined: everything else that matters (for example "live server", "mobile b
 ## Results
 | ID | Control or check | Status | Evidence (command, file, or summary) |
 
+## Assessments
+| Assessment | Status | Tools and versions (or "manual") | Covered | Not covered |
+| Secret Exposure | | | | |
+| Dependency Security | | | | |
+| Secure Code Review | | | | |
+
 ## Findings
 (one finding block each, highest severity first)
 
@@ -103,7 +127,7 @@ What could not be tested and why. Tools that were missing.
 What could still go wrong, in plain language, and what would reduce it next.
 
 ## Unresolved issues and next actions
-Now / Before launch / Later. Re-run triggers. Whether professional review is advisable.
+Now / Before launch / Later. Approvals still pending (upgrades, rotations, fixes). Re-run triggers. Whether professional review is advisable.
 
 This work reduces risk. It is not a guarantee that the project is secure.
 ````
@@ -116,6 +140,7 @@ Put this at the end of the agent's final message, after its normal summary of th
 ## Security summary (VibeLock)
 - **Tier:** <Basic | Standard | Advanced | Critical> [PROVISIONAL: <unknowns>]
 - **Changed for security:** <one line per change, or "no security-relevant changes">
+- **Assessments:** secrets <status>, dependencies <status>, code review <status>
 - **Results:** <n> PASS, <n> FAIL, <n> NOT TESTED, <n> BLOCKED, <n> NEEDS REVIEW, <n> NOT APPLICABLE
 - **Needs attention:** <each FAIL and BLOCKED with severity and file or reason>
 - **Not tested or examined:** <what, and why>
