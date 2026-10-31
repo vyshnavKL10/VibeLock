@@ -18,7 +18,7 @@ Rate each factor **Low**, **Medium**, **High**, or **Unknown**, and write down t
 |---|---|---|---|
 | **Exposure** (who can reach it) | Only the owner, local only | Authenticated users, a known group, an internal network, or an AI agent reading only trusted content | Public internet, anonymous access, widely distributed clients, or an agent that reads untrusted content |
 | **Incentive and abuse potential** | Nothing worth taking or abusing | Some value: accounts, compute, a spam relay, scrapable data | Direct gain: payments, credits, valuable data, or free resources attackers target (paid APIs, LLM credits, open relays) |
-| **Known weaknesses and maturity** | Framework defaults in use, no known issues | Not yet reviewed, or partial coverage | A confirmed weakness (a FAIL finding), missing basics, or security-critical code that is AI-generated and untested |
+| **Known weaknesses and maturity** | Framework defaults in use, no known issues | Not yet reviewed, or partial coverage | A confirmed weakness (a FAIL finding, including a confirmed exposed secret, reachable vulnerable dependency, or exploitable code weakness from the assessments), missing basics, or security-critical code that is AI-generated and untested |
 
 **Likelihood** is:
 
