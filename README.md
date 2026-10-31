@@ -85,35 +85,109 @@ Tiers come from evidence (exposure, incentive, weaknesses, data, privilege, fina
 
 ## Install
 
-VibeLock is a skill in the open [Agent Skills](https://agentskills.io/specification) format. The folder must be named `vibelock`, with `SKILL.md` directly inside it.
+VibeLock follows the open [Agent Skills](https://agentskills.io/) format. The skill directory must be named `vibelock`, with `SKILL.md` directly inside it.
 
-One command covers Codex, Cursor, GitHub Copilot, and Gemini CLI, which all read `.agents/skills/` in the project:
+### Quick Install
+
+Clone VibeLock directly into your AI coding agent's skills directory.
+
+**Codex / Cursor / Gemini CLI**
 
 ```bash
 git clone https://github.com/vyshnavKL10/VibeLock.git .agents/skills/vibelock
 ```
 
-Claude Code uses `.claude/skills/vibelock` instead (user-level: `~/.claude/skills/vibelock`). Antigravity and Windsurf have their own paths too. **[docs/AGENT_COMPATIBILITY.md](docs/AGENT_COMPATIBILITY.md) gives the path for every agent with a link to each vendor's documentation, and shows how to share one install between several agents.** Those paths are documented there, not tested in the agents by the authors.
+**Claude Code**
 
-The clone also contains files the skill does not need at runtime (README, LICENSE, and most of `docs/`). They are harmless: the agent loads `SKILL.md` first and reads other files only when a phase needs them.
+```bash
+git clone https://github.com/vyshnavKL10/VibeLock.git .claude/skills/vibelock
+```
 
-**Files the skill needs at runtime.** Keep these together, in the same folder layout, whenever you install by hand or copy the skill elsewhere:
+**Google Antigravity**
 
-| File | Used at |
-|---|---|
-| `SKILL.md` | Always. The skill itself. |
-| `docs/RISK_MODEL.md` | Phase 5, risk tiers |
-| `PLATFORMS.md` | Phase 6, controls |
-| `examples/REPORT_TEMPLATE.md` | Phases 7 and 11, plan and report formats |
-| `assessments/SECRETS.md`, `DEPENDENCIES.md`, `CODE_REVIEW.md` | Phase 9, when in scope (`SECRETS.md` also from Phase 1) |
+```bash
+git clone https://github.com/vyshnavKL10/VibeLock.git .agent/skills/vibelock
+```
 
-`SKILL.md` alone still loads. If the others are missing, the agent is told to say so and continue on its own judgment, marking those parts NEEDS REVIEW, so results are weaker and less consistent.
+**GitHub Copilot**
 
-Skills are instructions your agent will follow. Install only from the official repository, pin a commit, and read `SKILL.md` changes before you update. A clone contains its own `.git` folder. Inside your project's repository, add the path to `.gitignore`, add it as a submodule, or copy the files without `.git` (details in the compatibility guide).
+```bash
+git clone https://github.com/vyshnavKL10/VibeLock.git .github/skills/vibelock
+```
 
-### Claude (claude.ai)
+**Windsurf**
 
-Upload a packaged `vibelock.skill` file where your plan supports custom skills. Availability depends on your plan and organization. This route is untested.
+```bash
+git clone https://github.com/vyshnavKL10/VibeLock.git .windsurf/skills/vibelock
+```
+
+Run the command from your project's root directory. Choose the path matching your agent.
+
+### Multiple Agents
+
+You can share one VibeLock installation across compatible agents using symbolic links instead of maintaining multiple copies.
+
+First, install VibeLock in the shared directory:
+
+```bash
+git clone https://github.com/vyshnavKL10/VibeLock.git .agents/skills/vibelock
+```
+
+Then create symbolic links for agents that require a different directory.
+
+**Claude Code**
+
+```bash
+mkdir -p .claude/skills
+ln -s ../../.agents/skills/vibelock .claude/skills/vibelock
+```
+
+**Windsurf**
+
+```bash
+mkdir -p .windsurf/skills
+ln -s ../../.agents/skills/vibelock .windsurf/skills/vibelock
+```
+
+**Antigravity**
+
+```bash
+mkdir -p .agent/skills
+ln -s ../../.agents/skills/vibelock .agent/skills/vibelock
+```
+
+Only create links for agents that do not already discover the shared directory.
+
+> **Windows:** Symbolic links may require Developer Mode or administrator permissions. Alternatively, copy the VibeLock folder manually and keep the copies synchronized.
+
+### Updating VibeLock
+
+If installed using Git, navigate to the installation directory and pull the latest changes.
+
+```bash
+cd .agents/skills/vibelock
+git pull
+```
+
+For other installation paths, use the corresponding directory.
+
+### Managing Your Installation
+
+A cloned repository contains its own `.git` directory. Choose one:
+
+- **Personal use:** Add the installation directory to your project's `.gitignore`.
+- **Team use:** Add VibeLock as a Git submodule to pin a specific commit and share it with your team.
+- **Manual installation:** Copy the skill files without the `.git` directory.
+
+### Security Note
+
+VibeLock contains instructions that influence how your AI coding agent works. Install it only from the official repository. Review changes before updating, consider pinning a specific commit for team use, and keep your agent's trust and approval controls enabled.
+
+### Agent Compatibility
+
+Installation paths and discovery behavior can differ between agent platforms and versions. See [Agent Compatibility](docs/AGENT_COMPATIBILITY.md) for platform-specific paths, official documentation links, and multi-agent setup instructions.
+
+Documented compatibility does not necessarily mean behavioral testing has been completed by the VibeLock authors.
 
 ### Agents without skills support
 
