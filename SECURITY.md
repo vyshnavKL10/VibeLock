@@ -6,6 +6,7 @@ VibeLock is Markdown guidance plus one small lint script. Examples of issues wor
 
 - Guidance that could lead an agent or a user to an insecure outcome, such as a control that is wrong or a "fix" that weakens something.
 - A way the skill's own instructions could be abused, for example making an agent leak secrets, skip an approval gate, run destructive commands, or mark checks as PASS without evidence.
+- A command or recipe in `assessments/` that would print, store, or transmit a secret value.
 - A weakness in how the skill handles untrusted project content (prompt injection).
 - Tampering or confusion in releases, such as an unofficial copy presented as the official one.
 
