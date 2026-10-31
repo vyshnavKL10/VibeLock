@@ -22,11 +22,11 @@ Controls tagged two or more tiers above L are out of scope for now. Mention them
 ### Other notes
 
 - Controls are starting points, not a complete standard. Select by project fit and explain why each one applies.
-- **Maturity** notes mark how well-developed each section is. Version 0.2.0 has **not** been validated against real projects yet. Treat every section as guidance to verify, not authority.
+- **Maturity** notes mark how well-developed each section is. Version 0.4.0 has **not** been validated against real projects yet. Treat every section as guidance to verify, not authority.
 - Platform details change. When a control depends on a vendor's current behaviour (especially Huawei, Apple, Google, and payment providers), check the vendor's current documentation and mark the result NEEDS REVIEW if you can't.
 - Section "References" at the end lists where to check details. No external link has been checked by the authors of this file.
 
-Contents: Cross-cutting, Privacy and compliance, Web frontend, API and backend, GraphQL APIs, Authentication, Database, Server/VPS and containers, Payments and webhooks, CI/CD, Cloud, Microservices and internal services, Android, iOS, Huawei, Desktop, MCP servers and AI tools, Bots and automation, Internal tools, SDKs and libraries, References.
+Contents: Cross-cutting, Privacy and compliance, Web frontend, API and backend, GraphQL APIs, Code-level weaknesses, Authentication, Database, Server/VPS and containers, Payments and webhooks, CI/CD, Cloud, Microservices and internal services, Android, iOS, Huawei, Desktop, MCP servers and AI tools, Bots and automation, Internal tools, SDKs and libraries, References.
 
 ---
 
@@ -48,6 +48,9 @@ Maturity: core.
 - ALL-12 [L2+] Human review (or tests) for AI-written auth, authorization, payment, crypto, and permission code.
 - ALL-13 [L3+] Incident basics written down: who is alerted, how to revoke keys, how to roll back, how to contact users.
 - ALL-14 [L3+] Independent review or penetration test before launch or major changes.
+- ALL-15 [L2+] Secrets are caught before code reaches a shared remote: a pre-commit hook, or the host's push protection or secret scanning, where available.
+- ALL-16 [L2+] Reproducible installs: CI and deployments install from the lockfile in the package manager's locked or frozen mode (for example `npm ci`), and lockfile changes are reviewed in diffs.
+- ALL-17 [L2+] Unused dependencies are removed. Every direct dependency has a reason to exist.
 
 Verify: secret scan (if installed), dependency audit, reading `.gitignore` and config, grep for leftovers (ALL-06).
 
@@ -116,6 +119,25 @@ Applies when: the project exposes a GraphQL endpoint (in addition to the API and
 - GQL-06 [L3+] For first-party clients, consider persisted or allow-listed queries.
 
 Verify: tests for cross-user object access through nested fields, a deep-query test against a local instance, reading resolver code for missing checks.
+
+---
+
+## Code-level weaknesses
+
+Applies when: the project has application code. Used by the secure code review assessment (`assessments/CODE_REVIEW.md`), together with the API, web, authentication, and platform sections. Maturity: initial guidance, less tested.
+
+- CODE-01 [L1+] A file path built from untrusted input is resolved and checked to stay inside an allowed directory. Symlinks are considered, and user input never chooses a file to delete or overwrite unchecked.
+- CODE-02 [L1+] Untrusted data is not deserialized with formats that can build arbitrary objects (Python `pickle`, Java native serialization, unsafe YAML loaders, PHP `unserialize`, .NET `BinaryFormatter`). Use data-only formats such as JSON, with schema validation.
+- CODE-03 [L1+] Cryptography uses maintained libraries and high-level APIs: authenticated encryption, a cryptographically secure random source for tokens and keys, no hard-coded keys, no reused nonces, no MD5 or SHA-1 for security purposes, and constant-time comparison for MACs and tokens. Password hashing is AUTH-02.
+- CODE-04 [L1+] TLS certificate and hostname verification stay on, outside test code (no `verify=False`, `rejectUnauthorized: false`, `InsecureSkipVerify`, or trust-all managers).
+- CODE-05 [L2+] Check-then-act sequences that guard money, stock, coupons, rate limits, uniqueness, or files are atomic: use transactions, row locks, unique constraints, or atomic operations, so that concurrent requests can't both pass the check.
+- CODE-06 [L2+] Regular expressions applied to untrusted input can't backtrack catastrophically, and the input length is limited.
+- CODE-07 [L1+] Untrusted input is never evaluated as code or as a template: no `eval` or `exec` on it, no rendering of user-supplied template strings, no reflection on user-supplied class or function names.
+- CODE-08 [L1+] Security checks fail closed: an exception, a missing value, or an unexpected state in an authentication or authorization check denies access.
+- CODE-09 [L2+] Archive extraction checks that each entry's resolved path stays inside the target directory (zip-slip) and limits total size and entry count.
+- CODE-10 [L2+] XML parsers have external entities and DTD processing disabled unless the feature requires them.
+
+Verify: trace each case from source to sink (see `assessments/CODE_REVIEW.md`), and where the project has a test setup, write a local test with a harmless input.
 
 ---
 
@@ -370,6 +392,10 @@ Verify: read the publish workflow and package manifest.
 Where to check details. These are starting points by name; the authors have **not** checked that every link still resolves, and have not copied requirements from them. Always use the current edition of a standard, and don't cite version-specific behaviour from memory.
 
 - OWASP Top 10: https://owasp.org/www-project-top-ten/
+- OSV vulnerability database (dependencies, many ecosystems): https://osv.dev/
+- GitHub Advisory Database: https://github.com/advisories
+- NVD (CVE details): https://nvd.nist.gov/
+- CISA Known Exploited Vulnerabilities catalog: https://www.cisa.gov/known-exploited-vulnerabilities-catalog
 - OWASP Application Security Verification Standard (ASVS): https://owasp.org/www-project-application-security-verification-standard/
 - OWASP API Security Top 10: https://owasp.org/API-Security/
 - OWASP Cheat Sheet Series: https://cheatsheetseries.owasp.org/
