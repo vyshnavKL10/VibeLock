@@ -9,12 +9,13 @@ How the repository is organized and why. For what VibeLock does, see the [README
 | Core workflow | `SKILL.md` | The 12-phase process, ground rules, approval gates, statuses | No. Plain Markdown. |
 | Risk model | `docs/RISK_MODEL.md` | How risk is rated and how a project moves between tiers | No |
 | Platform guidance | `PLATFORMS.md` | Controls per platform, tagged by tier and classified | No |
+| Assessments | `assessments/DEPENDENCIES.md`, `SECRETS.md`, `CODE_REVIEW.md` | Step-by-step procedures for the dependency, secret, and code-review assessments, loaded only when in scope | No |
 | Templates | `examples/REPORT_TEMPLATE.md` | Plan, finding, and report formats | No |
-| Agent adapters | none yet | Agent-specific install or loading glue | Yes, by definition |
+| Agent install and fallback | `docs/AGENT_COMPATIBILITY.md` | Install path for each agent, and the `AGENTS.md` pointer fallback. No agent-specific copy of the methodology. | Yes, by definition |
 
-**Runtime files.** Only `SKILL.md`, `docs/RISK_MODEL.md`, `PLATFORMS.md`, and `examples/REPORT_TEMPLATE.md` are read while the skill runs. The rest is for visitors and maintainers.
+**Runtime files.** Only `SKILL.md`, `docs/RISK_MODEL.md`, `PLATFORMS.md`, `examples/REPORT_TEMPLATE.md`, and the files in `assessments/` are read while the skill runs. The rest is for visitors and maintainers.
 
-**One canonical source for each thing.** The tier rubric lives only in `RISK_MODEL.md`. Controls live only in `PLATFORMS.md`. The statuses are defined in `SKILL.md`. Other files link to them instead of copying them, so a fix is made once.
+**One canonical source for each thing.** The tier rubric lives only in `RISK_MODEL.md`. Controls live only in `PLATFORMS.md`. The statuses are defined in `SKILL.md`. Assessment procedures live only in `assessments/`: `SKILL.md` decides when they run, and `PLATFORMS.md` holds the controls they point to. Install paths per agent live only in `AGENT_COMPATIBILITY.md`. Other files link to these instead of copying them, so a fix is made once.
 
 ## How a run flows
 
@@ -30,7 +31,7 @@ SKILL.md  --Phase 1-4-->  discover, ask about gaps, map, threats
    |
    +--Phase 7-->  examples/REPORT_TEMPLATE.md (Plan)  -> user approval
    |
-   +--Phase 8-10-> implement, run checks, review own diff
+   +--Phase 8-10-> implement; run checks and the in-scope assessments (assessments/*.md); review own diff
    |
    +--Phase 11-12-> examples/REPORT_TEMPLATE.md (Report) -> unresolved issues, next actions
 ```
@@ -49,19 +50,17 @@ The agent loads the reference files only at the phase that needs them. This keep
 
 **Six statuses, with no "pass by default".** PASS needs evidence. NOT TESTED is never counted as PASS. NOT APPLICABLE is not a gap. This is the main defence against a security report that sounds more confident than the work behind it.
 
+**Assessments are procedures, not scanners.** Dependency security, secret exposure, and code review are written as step-by-step instructions for the agent, using whatever tools the user already has. Nothing is bundled and nothing is required. When a tool is missing, that part of the assessment says NOT TESTED instead of guessing. Each assessment is its own file so the agent loads only the ones the project needs. Findings carry a class and a confidence, so a confirmed vulnerability, an outdated package, and a hunch are never reported as the same thing.
+
 **Reference files are linked by relative path.** The skill folder can be cloned or copied anywhere and keep working, as long as the folder structure stays intact.
 
 ## Agent compatibility
 
-The methodology is plain Markdown and does not mention an agent-specific mechanism, except one optional hint to use a structured question tool if the agent has one.
+VibeLock is written in the open Agent Skills format: a folder named `vibelock` with `SKILL.md` and reference files. Agents that support the format load that one copy directly, so the methodology is never duplicated per agent. The install path for each agent, how to check that it loaded, and what has and hasn't been verified are kept in one place: [AGENT_COMPATIBILITY.md](AGENT_COMPATIBILITY.md).
 
-| Target | How it is meant to load | Status |
-|---|---|---|
-| Claude Code | Folder at `.claude/skills/vibelock/` (project) or `~/.claude/skills/vibelock/` (user) with `SKILL.md` at its root | Documented skill convention. **Not yet tested end to end by the authors.** |
-| Claude (claude.ai) | Upload of a packaged `.skill` file | The package passes the skill validator. **Upload and behaviour not tested by the authors.** |
-| Other agents (Cursor, Antigravity, Codex, and others) | No adapter provided | **Unsupported until an adapter is explained and validated.** You can point an agent's instruction file at `SKILL.md`, but results are unknown. |
+The methodology is plain Markdown. It uses only frontmatter fields from the open standard, and its one agent-flavored hint (use a structured question tool if the agent has one) is optional.
 
-Reading Markdown is not the same as supporting a skill. Each agent has its own way to discover instructions, load referenced files, ask questions, and run commands. An adapter should be added only when its author can explain that agent's convention and show that the skill loads and the workflow runs on that agent.
+Reading Markdown is not the same as supporting a skill. Each agent has its own way to discover instructions, load referenced files, ask questions, and run commands. A row is added to the compatibility guide only when its author can point to the agent's official documentation and says exactly what was and wasn't run.
 
 **Adapter rule:** an adapter may contain installation glue and a pointer to `SKILL.md`. It must not copy the methodology. If an agent needs different wording, change `SKILL.md` for everyone or document the limitation.
 
@@ -75,6 +74,6 @@ There is no `vibelock` command today. If one is ever built, the commands below a
 | `vibelock analyze` | Produce the discovery output (files, entry points, data, exposure) deterministically |
 | `vibelock check` | Run supported checks and emit evidence records |
 
-The skill is written so that such a tool could slot in without changing the methodology. The seam is the **evidence record**: each check yields an ID (matching a control ID in `PLATFORMS.md`), a status from the six statuses, the command that ran, and a short output summary. The agent would treat tool output exactly like any check it ran itself: cite it, and never upgrade a missing result to PASS. Until a tool exists, the agent produces these records by hand in the report.
+The skill is written so that such a tool could slot in without changing the methodology. The seam is the **evidence record**: each check yields an ID (matching a control ID in `PLATFORMS.md`), a status from the six statuses, the command that ran, and a short output summary. The agent would treat tool output exactly like any check it ran itself: cite it, and never upgrade a missing result to PASS. Until a tool exists, the agent produces these records by hand in the report. Dependency auditing and secret scanning are the most natural first candidates, because their tools already produce structured output, but neither exists as a VibeLock tool.
 
 Rules for any future tool: stdlib or well-known dependencies only, no network calls without opt-in, no telemetry, and it never prints secret values.
